@@ -17,16 +17,22 @@ namespace RotaVerdeAPI.Controllers
 
         // GET: api/user
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var users = _userManager
-                .Users.Select(u => new
-                {
-                    u.Id,
-                    u.UserName,
-                    u.Email,
-                })
-                .ToList();
+            var users = new List<object>();
+            foreach (var user in _userManager.Users.ToList())
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                users.Add(
+                    new
+                    {
+                        user.Id,
+                        user.UserName,
+                        user.Email,
+                        Roles = roles,
+                    }
+                );
+            }
             return Ok(users);
         }
 
@@ -63,6 +69,11 @@ namespace RotaVerdeAPI.Controllers
                 user.FullName = fullName;
             if (updates.TryGetValue("Address", out var address))
                 user.Address = address;
+            if (
+                updates.TryGetValue("turmaId", out var turmaId)
+                && int.TryParse(turmaId, out var turmaIdInt)
+            )
+                user.TurmaId = turmaIdInt;
 
             var result = await _userManager.UpdateAsync(user); // Atualizar o usuário
             if (!result.Succeeded) // Verificar se a atualização foi bem-sucedida

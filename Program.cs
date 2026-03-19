@@ -60,7 +60,7 @@ SeedData.Initialize(app.Services);
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowVercel"); // Use a política de CORS atualizada
+app.UseCors("AllowSpecificOrigin"); // Use a política de CORS atualizada
 
 app.UseAuthentication();
 app.UseAuthorization();

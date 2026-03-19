@@ -1,10 +1,10 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RotaVerdeAPI.Data; // Namespace do DbContext
 using RotaVerdeAPI.Models; // Namespace do modelo Turma
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RotaVerdeAPI.Controllers
 {
@@ -47,8 +47,8 @@ namespace RotaVerdeAPI.Controllers
             await _context.SaveChangesAsync();
 
             // Carregar propriedades relacionadas, se necessário
-            var turmaCriada = await _context.Turmas
-                .Include(t => t.Criador) // Inclua o criador, se aplicável
+            var turmaCriada = await _context
+                .Turmas.Include(t => t.Criador) // Inclua o criador, se aplicável
                 .FirstOrDefaultAsync(t => t.Id == turma.Id);
 
             return CreatedAtAction(nameof(GetById), new { id = turma.Id }, turmaCriada);
@@ -56,14 +56,50 @@ namespace RotaVerdeAPI.Controllers
 
         // PUT: api/Turma/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, [FromBody] TurmaModel turma)
+        public async Task<ActionResult> Update(int id, [FromBody] TurmaModel turmaAtualizada)
         {
-            if (id != turma.Id)
+            if (id != turmaAtualizada.Id)
             {
-                return BadRequest();
+                return BadRequest("ID da URL não coincide com o ID do corpo.");
             }
 
-            _context.Entry(turma).State = EntityState.Modified;
+            // 1. Busca a turma existente incluindo a lista de usuários atual
+            var turmaNoBanco = await _context
+                .Turmas.Include(t => t.Usuarios)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (turmaNoBanco == null)
+            {
+                return NotFound();
+            }
+
+            // 2. Atualiza os dados básicos da turma
+            turmaNoBanco.Nome = turmaAtualizada.Nome;
+            turmaNoBanco.Descricao = turmaAtualizada.Descricao;
+            turmaNoBanco.AnoLetivo = turmaAtualizada.AnoLetivo;
+            turmaNoBanco.Turno = turmaAtualizada.Turno;
+
+            // 3. Lógica para atualizar os Alunos/Usuários
+            // Se a turma que veio do front-end tem uma lista de usuários (mesmo que só com IDs)
+            if (turmaAtualizada.Usuarios != null)
+            {
+                // Limpa a lista atual para reconstruir com os novos selecionados
+                turmaNoBanco.Usuarios.Clear();
+
+                // Extrai os IDs dos usuários enviados pelo front-end
+                var idsNovosUsuarios = turmaAtualizada.Usuarios.Select(u => u.Id).ToList();
+
+                // Busca os objetos ApplicationUser reais no banco para esses IDs
+                var novosUsuariosNoBanco = await _context
+                    .Users.Where(u => idsNovosUsuarios.Contains(u.Id))
+                    .ToListAsync();
+
+                // Adiciona os objetos reais à coleção da turma
+                foreach (var usuario in novosUsuariosNoBanco)
+                {
+                    turmaNoBanco.Usuarios.Add(usuario);
+                }
+            }
 
             try
             {
@@ -72,9 +108,7 @@ namespace RotaVerdeAPI.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!_context.Turmas.Any(t => t.Id == id))
-                {
                     return NotFound();
-                }
                 throw;
             }
 

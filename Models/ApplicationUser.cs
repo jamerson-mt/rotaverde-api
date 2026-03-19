@@ -6,5 +6,9 @@ namespace RotaVerdeAPI.Models
     {
         public string? FullName { get; set; }
         public string? Address { get; set; }
+        public int? TurmaId { get; internal set; }
+
+        
+
     }
 }

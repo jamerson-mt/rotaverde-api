@@ -14,8 +14,9 @@ namespace RotaVerdeAPI.Models
         public required string CriadorId { get; set; } // ID do usuário que criou a turma (relacionado ao IdentityUser)
         public ApplicationUser? Criador { get; set; } // Relacionamento com o usuário criador da turma
 
-        // Relacionamento com usuários (alunos e professores)
+        // Dentro da classe TurmaModel
         public ICollection<ApplicationUser> Usuarios { get; set; } = new List<ApplicationUser>();
 
+        // Relacionamento com usuários (alunos e professores)
     }
 }
