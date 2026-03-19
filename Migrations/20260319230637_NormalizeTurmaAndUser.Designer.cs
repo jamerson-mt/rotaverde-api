@@ -11,8 +11,8 @@ using RotaVerdeAPI.Data;
 namespace RotaVerdeAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260319212016_AddTurmaToUser2")]
-    partial class AddTurmaToUser2
+    [Migration("20260319230637_NormalizeTurmaAndUser")]
+    partial class NormalizeTurmaAndUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -202,9 +202,6 @@ namespace RotaVerdeAPI.Migrations
                     b.Property<int?>("TurmaId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("TurmaModelId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
 
@@ -220,8 +217,6 @@ namespace RotaVerdeAPI.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
-
-                    b.HasIndex("TurmaModelId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -351,13 +346,6 @@ namespace RotaVerdeAPI.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("RotaVerdeAPI.Models.ApplicationUser", b =>
-                {
-                    b.HasOne("RotaVerdeAPI.Models.TurmaModel", null)
-                        .WithMany("Usuarios")
-                        .HasForeignKey("TurmaModelId");
-                });
-
             modelBuilder.Entity("RotaVerdeAPI.Models.TurmaModel", b =>
                 {
                     b.HasOne("RotaVerdeAPI.Models.ApplicationUser", "Criador")
@@ -367,11 +355,6 @@ namespace RotaVerdeAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Criador");
-                });
-
-            modelBuilder.Entity("RotaVerdeAPI.Models.TurmaModel", b =>
-                {
-                    b.Navigation("Usuarios");
                 });
 #pragma warning restore 612, 618
         }
