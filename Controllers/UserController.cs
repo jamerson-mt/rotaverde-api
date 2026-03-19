@@ -54,30 +54,23 @@ namespace RotaVerdeAPI.Controllers
             {
                 return NotFound();
             }
-            if (updates.ContainsKey("UserName"))
-            {
-                user.UserName = updates["UserName"];
-            }
-            if (updates.ContainsKey("Email"))
-            {
-                user.Email = updates["Email"];
-            }
-            if (updates.ContainsKey("FullName"))
-            {
-                user.FullName = updates["FullName"];
-            }
-            if (updates.ContainsKey("Address"))
-            {
-                user.Address = updates["Address"];
-            }
+            // Atualizar os campos do usuário com base no dicionário de atualizações
+            if (updates.TryGetValue("UserName", out var userName))
+                user.UserName = userName;
+            if (updates.TryGetValue("Email", out var email))
+                user.Email = email;
+            if (updates.TryGetValue("FullName", out var fullName))
+                user.FullName = fullName;
+            if (updates.TryGetValue("Address", out var address))
+                user.Address = address;
 
-            var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded)
+            var result = await _userManager.UpdateAsync(user); // Atualizar o usuário
+            if (!result.Succeeded) // Verificar se a atualização foi bem-sucedida
             {
-                return BadRequest(result.Errors);
+                return BadRequest(result.Errors); //
             }
-
-            return NoContent();
+            //retorna dados atualizados do usuário, menos dados sensíveis
+            return Ok(new { user.UserName, user.Email });
         }
 
         // DELETE: api/user/{id}
