@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    container_name: rotaverde_api
+    ports:
+      - "8080:8080"
+    volumes:
+      # Isso mapeia o arquivo do banco do container para a sua pasta real
+      - ./database:/app/database # qual esse caminho: 
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Data Source=database/rotaverde.db # Certifique-se de que o caminho do banco de dados esteja correto
