@@ -17,6 +17,12 @@ namespace RotaVerdeAPI.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder
+                .Entity<ApplicationUser>()
+                .HasOne<TurmaModel>() // Usuario tem uma Turma
+                .WithMany() // Turma tem muitos Usuarios
+                .HasForeignKey(u => u.TurmaId)
+                .OnDelete(DeleteBehavior.SetNull); // AO APAGAR TURMA, TURMAID VIRA NULL
 
             // Configurações adicionais podem ser feitas aqui
         }

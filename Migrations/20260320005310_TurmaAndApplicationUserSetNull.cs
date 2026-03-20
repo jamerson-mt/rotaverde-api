@@ -5,7 +5,7 @@
 namespace RotaVerdeAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class NormalizeTurmaAndUser : Migration
+    public partial class TurmaAndApplicationUserSetNull : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -29,11 +29,32 @@ namespace RotaVerdeAPI.Migrations
                 nullable: true,
                 oldClrType: typeof(int),
                 oldType: "INTEGER");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_TurmaId",
+                table: "AspNetUsers",
+                column: "TurmaId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_AspNetUsers_Turmas_TurmaId",
+                table: "AspNetUsers",
+                column: "TurmaId",
+                principalTable: "Turmas",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_AspNetUsers_Turmas_TurmaId",
+                table: "AspNetUsers");
+
+            migrationBuilder.DropIndex(
+                name: "IX_AspNetUsers_TurmaId",
+                table: "AspNetUsers");
+
             migrationBuilder.AlterColumn<int>(
                 name: "TurmaId",
                 table: "AspNetUsers",

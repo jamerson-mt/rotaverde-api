@@ -215,6 +215,8 @@ namespace RotaVerdeAPI.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
+                    b.HasIndex("TurmaId");
+
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
@@ -341,6 +343,14 @@ namespace RotaVerdeAPI.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("RotaVerdeAPI.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("RotaVerdeAPI.Models.TurmaModel", null)
+                        .WithMany()
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("RotaVerdeAPI.Models.TurmaModel", b =>

@@ -11,8 +11,8 @@ using RotaVerdeAPI.Data;
 namespace RotaVerdeAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260319230637_NormalizeTurmaAndUser")]
-    partial class NormalizeTurmaAndUser
+    [Migration("20260320005310_TurmaAndApplicationUserSetNull")]
+    partial class TurmaAndApplicationUserSetNull
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -218,6 +218,8 @@ namespace RotaVerdeAPI.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
+                    b.HasIndex("TurmaId");
+
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
@@ -344,6 +346,14 @@ namespace RotaVerdeAPI.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("RotaVerdeAPI.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("RotaVerdeAPI.Models.TurmaModel", null)
+                        .WithMany()
+                        .HasForeignKey("TurmaId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("RotaVerdeAPI.Models.TurmaModel", b =>
