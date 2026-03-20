@@ -4,7 +4,6 @@ namespace RotaVerdeAPI.Models.Enum
     {
         Matutino,
         Vespertino,
-        Noturno
-        
+        Noturno,
     }
 }

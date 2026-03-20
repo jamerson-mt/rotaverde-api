@@ -29,6 +29,7 @@ namespace RotaVerdeAPI.Controllers
                         user.Id,
                         user.UserName,
                         user.Email,
+                        user.TurmaId,
                         Roles = roles,
                     }
                 );

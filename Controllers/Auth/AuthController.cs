@@ -73,12 +73,12 @@ namespace RotaVerdeAPI.Controllers.Auth
             {
                 return Unauthorized(new { Message = "Usuário não encontrado!" });
             }
-
+            // Verifica a senha e configura o cookie de autenticação
             var result = await _signInManager.PasswordSignInAsync(
                 request.Username,
                 request.Password,
-                false,
-                false
+                false, // Não persistir o cookie (não lembrar do login)
+                false // Não bloquear o usuário em caso de falha
             ); //
             if (!result.Succeeded)
             {
@@ -112,7 +112,6 @@ namespace RotaVerdeAPI.Controllers.Auth
             return Ok(new { Message = "Logout realizado com sucesso!" });
         }
 
-       
         // POST: api/Auth/AssignRole
         [HttpPost("assign-role")]
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
@@ -165,7 +164,6 @@ namespace RotaVerdeAPI.Controllers.Auth
             return Ok(new { Number = newNumber });
         }
 
-       
         // GET: api/Auth/GeneratedNumbers
         [HttpGet("generated")]
         public IActionResult GetGeneratedNumbers()
@@ -179,7 +177,6 @@ namespace RotaVerdeAPI.Controllers.Auth
             return Ok(numbers);
         }
 
-       
         // POST: api/Auth/AssignNumber
         [HttpPost("assign-number")]
         public async Task<IActionResult> AssignNumber([FromBody] AssignNumberRequest request)
