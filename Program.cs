@@ -1,69 +1,79 @@
-using Microsoft.AspNetCore.DataProtection; // Adicione esta linha
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using RotaVerdeAPI.Data;
 using RotaVerdeAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure CORS
-void ConfigureCors(IServiceCollection services)
+// --- 1. CONFIGURAÇÃO DE CORS ---
+// Unificamos as origens em uma única política para evitar conflitos de seleção
+builder.Services.AddCors(options =>
 {
-    services.AddCors(options =>
-    {
-        options.AddPolicy(
-            "AllowSpecificOrigin",
-            policy =>
-            {
-                policy
-                    .WithOrigins("http://localhost:5173")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials();
-            }
-        );
+    options.AddPolicy(
+        "RotaVerdePolicy",
+        policy =>
+        {
+            policy
+                .WithOrigins("https://rotaverde.vercel.app", "http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials(); // Essencial para Identity (Cookies/Tokens)
+        }
+    );
+});
 
-        options.AddPolicy(
-            "AllowVercel",
-            policy =>
-            {
-                policy
-                    .WithOrigins("https://rotaverde.vercel.app")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            }
-        );
-    });
-}
-
-ConfigureCors(builder.Services);
-
+// --- 2. SERVIÇOS BASE ---
 builder.Services.AddControllers();
 
-// Configurar o banco de dados (use SQLite como exemplo)
+// Configurar o banco de dados SQLite
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// Configurar o Identity
+// --- 3. CONFIGURAR IDENTITY ---
 builder
-    .Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        // Ajustes de senha opcionais para facilitar o teste inicial
+        options.Password.RequireDigit = false;
+        options.Password.RequiredLength = 6;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
 var app = builder.Build();
 
-// Método para criar roles e aplicar migrations
-SeedData.Initialize(app.Services);
+// --- 4. INICIALIZAÇÃO DE DADOS (SEED) ---
+// Certifique-se que sua classe SeedData está correta
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        SeedData.Initialize(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Um erro ocorreu ao semear o banco de dados.");
+    }
+}
 
+// --- 5. MIDDLEWARES (A ORDEM IMPORTA MUITO) ---
+
+// O CORS deve ser o primeiro para responder às requisições "OPTIONS" do navegador
+app.UseCors("RotaVerdePolicy");
+
+// Se estiver no Docker/VPS com Nginx, o HTTPS Redirection às vezes é opcional,
+// mas manteremos aqui por segurança.
 app.UseHttpsRedirection();
 
-app.UseCors("AllowVercel"); // Use a política de CORS atualizada
-
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthentication(); // Quem é o usuário?
+app.UseAuthorization(); // O que ele pode fazer?
 
 app.MapControllers();
 
