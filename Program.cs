@@ -15,10 +15,9 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .WithOrigins("https://rotaverde.vercel.app", "http://localhost:5173")
+                .AllowAnyOrigin() // Teste: permite qualquer origem
                 .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials(); // Essencial para Identity (Cookies/Tokens)
+                .AllowAnyMethod();
         }
     );
 });
